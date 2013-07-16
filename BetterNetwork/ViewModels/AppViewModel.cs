@@ -12,6 +12,8 @@ namespace BetterNetwork.ViewModels
     {
         public void GetAvailableNetworks()
         {
+            var profileReg = new Dictionary<string, string>();
+
             var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             var interfaces = registry.OpenSubKey(@"SOFTWARE\Microsoft\WlanSvc\Interfaces\");
             var profiles = interfaces.OpenSubKey(interfaces.GetSubKeyNames().First() + @"\Profiles");
@@ -20,6 +22,8 @@ namespace BetterNetwork.ViewModels
             {
                 var metadata = profiles.OpenSubKey(profile + @"\Metadata").GetValue("Channel Hints");
                 var network = ExtractNetworkNames((byte[]) metadata);
+                var path = profiles.Name + "\\" + profile;
+                profileReg.Add(network, path);
             }
         }
         
@@ -30,12 +34,12 @@ namespace BetterNetwork.ViewModels
             {
                 if (metadata[i] == 0)
                 {
-                    position = i;
+                    position = i - 4;
                     break;
                 }
             }
 
-            return Encoding.ASCII.GetString((byte[])metadata, 4, position - 4);
+            return Encoding.ASCII.GetString((byte[])metadata, 4, position);
         }
     }
 }
