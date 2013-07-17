@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using BetterNetwork.Models;
@@ -12,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace BetterNetwork.ViewModels
 {
+    [Export(typeof(AppViewModel))]
     public class AppViewModel : PropertyChangedBase
     {
         #region Properties
@@ -55,12 +58,17 @@ namespace BetterNetwork.ViewModels
         }
         #endregion
 
-        public AppViewModel()
+        private readonly IWindowManager _windowManager;
+        [ImportingConstructor]
+        public AppViewModel(IWindowManager windowManager)
         {
+            _windowManager = windowManager;
             InterfaceProfiles = new ObservableCollection<InterfaceProfile>();
             NetworkProfiles = new ObservableCollection<NetworkProfile>();
             ToDeleteInterfaces = new ObservableCollection<InterfaceProfile>();
             ToDeleteNetworks = new ObservableCollection<NetworkProfile>();
+
+            SixtyFourBitChecked = true;
         }
 
         #region Network Interfaces Profiles
@@ -225,6 +233,18 @@ namespace BetterNetwork.ViewModels
                     DeleteNetworkProfiles(networkProfile);
                 }
             }
+        }
+
+        public void About()
+        {
+            _windowManager.ShowWindow(new AboutViewModel(_windowManager));
+        }
+
+        public void NavigateTo()
+        {
+            var url =
+                @"https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=XJCQMH4NUALP8&lc=MY&item_name=Shulhi%20Sapli&item_number=betternetwork&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted";
+            Process.Start(new ProcessStartInfo(url));
         }
         #endregion
     }

@@ -5,8 +5,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
-             mc:Ignorable="d" Width="724.1" Height="206">
+             mc:Ignorable="d" Width="724.1" Height="206" MaxHeight="206" MaxWidth="725" MinHeight="206" MinWidth="725">
     <Grid HorizontalAlignment="Left" Width="724" Margin="0,0,0,10">
+        <Grid.Resources>
+            <Style x:Key="HyperlinkButton" TargetType="Button">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <ContentPresenter/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="245*"/>
             <ColumnDefinition Width="263*"/>
@@ -62,13 +73,24 @@
         <Label Content="Network Lists" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="1" Height="26" Width="81" Margin="10,5,0,0"/>
         <Button Name="Delete" Content="Delete" Grid.Column="2" HorizontalAlignment="Left" Margin="110,107,0,0" VerticalAlignment="Top" Width="96" Height="20"/>
         <GroupBox Grid.Column="2" Header="Settings" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Height="58" Width="196">
-            <StackPanel>
+            <StackPanel Width="191">
                 <RadioButton Name="ThirtyTwoBitChecked" Content="32-bit system"/>
                 <RadioButton Name="SixtyFourBitChecked" Content="64-bit system" IsChecked="True"/>
             </StackPanel>
         </GroupBox>
-        <Label Content="About" Grid.Column="2" HorizontalAlignment="Left" Margin="164,166,0,0" VerticalAlignment="Top" Width="42"/>
-        <Label Content="Donate" Grid.Column="2" HorizontalAlignment="Left" Margin="110,165,0,0" VerticalAlignment="Top"/>
+        <!--http://stackoverflow.com/questions/4757780/bind-method-on-click-event-of-labellink-control-in-wpf-caliburn/13587615#13587615-->
+        <Button Style="{StaticResource HyperlinkButton}" Focusable="False"
+            cal:Message.Attach="[Event Click] = [Action About]" Grid.Column="2" Margin="168,170,10,7">
+            <TextBlock>
+                <Hyperlink Focusable="False">About</Hyperlink>
+            </TextBlock>
+        </Button>
+        <Button Style="{StaticResource HyperlinkButton}" Focusable="False"
+        cal:Message.Attach="[Action NavigateTo()]" Grid.Column="2" Margin="110,170,67,7">
+            <TextBlock Margin="10,0,-10,0">
+            <Hyperlink Focusable="False">Donate</Hyperlink>
+            </TextBlock>
+        </Button>
         <Button Name="LoadAll" Content="Load All" 
                 Grid.Column="2" HorizontalAlignment="Left" Margin="10,107,0,0" VerticalAlignment="Top" Width="96"/>
     </Grid>
