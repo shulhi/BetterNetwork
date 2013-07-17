@@ -1,10 +1,13 @@
 ﻿<Window x:Class="BetterNetwork.Views.AboutView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AboutView" Height="207" Width="410" ResizeMode="NoResize">
+        Title="About" Height="207" Width="410" ResizeMode="NoResize">
     <Grid>
-        <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="This application is used to delete unwanted network list for Windows 8. Somehow, the feature is no longer available in Windows 8." VerticalAlignment="Top" Height="35" Width="382"/>
-        <TextBlock HorizontalAlignment="Left" Margin="10,65,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="101" Width="382"><Run Text="Author : Shulhi Sapli"/><LineBreak/><Run Text="Contact : shulhi@gmail.com / @shulhisapli"/><LineBreak/><Run/><LineBreak/><Run Text="Version : 1.0"/><LineBreak/><Run Text="License under MIT. Feel free to contribute to this project at Github."/></TextBlock>
-
+        <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" 
+                   Text="This application is used to delete unwanted network list for Windows 8. Somehow, the feature is no longer available in Windows 8." 
+                   VerticalAlignment="Top" Height="35" Width="382"/>
+        <TextBlock HorizontalAlignment="Left" Margin="10,65,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="101" Width="382">
+            <Run Text="Author : Shulhi Sapli"/><LineBreak/><Run Text="Contact : shulhi@gmail.com / @shulhisapli"/><LineBreak/><Run/><LineBreak/>
+            <Run Text="Version : 1.0"/><LineBreak/><Run Text="License under MIT. Feel free to contribute to this project at Github."/></TextBlock>
     </Grid>
 </Window>

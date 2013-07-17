@@ -13,25 +13,25 @@ namespace BetterNetwork
 {
     public class AppBootstrapper : Bootstrapper<AppViewModel>
     {
-        private CompositionContainer container;
+        private CompositionContainer _container;
 
         protected override void Configure()
         {
-            container = new CompositionContainer(new AggregateCatalog(AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()));
+            _container = new CompositionContainer(new AggregateCatalog(AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()));
 
-            CompositionBatch batch = new CompositionBatch();
+            var batch = new CompositionBatch();
 
-            batch.AddExportedValue<IWindowManager>(new WindowManager());
+            batch.AddExportedValue<IWindowManager>(new CustomWindowManager());
             batch.AddExportedValue<IEventAggregator>(new EventAggregator());
-            batch.AddExportedValue(container);
+            batch.AddExportedValue(_container);
 
-            container.Compose(batch);
+            _container.Compose(batch);
         }
 
         protected override object GetInstance(Type serviceType, string key)
         {
             string contract = string.IsNullOrEmpty(key) ? AttributedModelServices.GetContractName(serviceType) : key;
-            var exports = container.GetExportedValues<object>(contract);
+            var exports = _container.GetExportedValues<object>(contract);
 
             if (exports.Count() > 0)
             {

@@ -80,20 +80,24 @@ namespace BetterNetwork.ViewModels
                 var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
 
                 var interfaces = registry.OpenSubKey(@"SOFTWARE\Microsoft\WlanSvc\Interfaces\");
-                var profiles = interfaces.OpenSubKey(interfaces.GetSubKeyNames().First() + @"\Profiles");
-
-                foreach (var profile in profiles.GetSubKeyNames())
+                if (interfaces != null)
                 {
-                    var metadata = profiles.OpenSubKey(profile + @"\Metadata").GetValue("Channel Hints");
-                    var network = ExtractNetworkNames((byte[]) metadata);
-                    var path = profiles.Name + "\\" + profile;
+                    var profiles = interfaces.OpenSubKey(interfaces.GetSubKeyNames().First() + @"\Profiles");
 
-                    InterfaceProfiles.Add(new InterfaceProfile {Name = network, RegistryPath = path});
+                    foreach (var profile in profiles.GetSubKeyNames())
+                    {
+                        var metadata = profiles.OpenSubKey(profile + @"\Metadata").GetValue("Channel Hints");
+                        var network = ExtractNetworkNames((byte[]) metadata);
+                        var path = profiles.Name + "\\" + profile;
+
+                        InterfaceProfiles.Add(new InterfaceProfile {Name = network, RegistryPath = path});
+                    }
+
+                    interfaces.Close();
+                    profiles.Close();
                 }
 
                 registry.Close();
-                interfaces.Close();
-                profiles.Close();
             }
             catch (SecurityException e)
             {
@@ -144,17 +148,20 @@ namespace BetterNetwork.ViewModels
                 var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
                 // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles
                 var profiles = registry.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles");
-
-                foreach (var profile in profiles.GetSubKeyNames())
+                if(profiles != null)
                 {
-                    var name = profiles.OpenSubKey(profile).GetValue("ProfileName");
-                    var path = profiles.Name + "\\" + profile;
+                    foreach (var profile in profiles.GetSubKeyNames())
+                    {
+                        var name = profiles.OpenSubKey(profile).GetValue("ProfileName");
+                        var path = profiles.Name + "\\" + profile;
 
-                    NetworkProfiles.Add(new NetworkProfile {Name = (string)name, RegistryPath = path});
+                        NetworkProfiles.Add(new NetworkProfile {Name = (string)name, RegistryPath = path});
+                    }
+
+                    profiles.Close();
                 }
 
                 registry.Close();
-                profiles.Close();
             }
             catch (SecurityException e)
             {
