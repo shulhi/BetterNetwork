@@ -33,8 +33,12 @@ namespace BetterNetwork.ViewModels
         {
             InterfaceProfiles = new ObservableCollection<InterfaceProfile>();
             ToBeDeletedInterfaces = new ObservableCollection<InterfaceProfile>();
+
+            // Load all interfaces
+            GetInterfaceProfiles();
         }
 
+        #region Network Interfaces Profiles
         public void GetInterfaceProfiles()
         {
             try
@@ -61,6 +65,11 @@ namespace BetterNetwork.ViewModels
                 Console.WriteLine(e);
             }
         }
+
+        public void DeleteInterfaceProfiles(InterfaceProfile profile)
+        {
+            
+        }
         
         private static string ExtractNetworkNames(byte[] metadata)
         {
@@ -75,6 +84,26 @@ namespace BetterNetwork.ViewModels
             }
 
             return Encoding.ASCII.GetString((byte[])metadata, 4, position);
+        }
+        #endregion
+
+        public void GetNetworkProfiles()
+        {
+            try
+            {
+                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles
+                var profiles = registry.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles");
+
+                foreach (var profile in profiles.GetSubKeyNames())
+                {
+                        
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         #region Events Handler
@@ -94,6 +123,14 @@ namespace BetterNetwork.ViewModels
             var profile = InterfaceProfiles.First(x => x.Name == (string)item.Content);
             if (ToBeDeletedInterfaces.Contains(profile))
                 ToBeDeletedInterfaces.Remove(profile);
+        }
+
+        public void Delete()
+        {
+            foreach (var beDeletedInterface in ToBeDeletedInterfaces)
+            {
+                DeleteInterfaceProfiles(beDeletedInterface);
+            }
         }
         #endregion
     }

@@ -5,13 +5,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
-        <Button Name="GetInterfaceProfiles" Content="List of networks" 
-                HorizontalAlignment="Left" Margin="19,30,0,0" VerticalAlignment="Top" Width="103" Height="30"/>
-        <ListBox Name="InterfaceProfiles"
-            HorizontalAlignment="Left" Height="171" Margin="19,78,0,0" VerticalAlignment="Top" Width="236">
+             mc:Ignorable="d" Width="724.1" Height="206">
+    <Grid HorizontalAlignment="Left" Width="724">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="245*"/>
+            <ColumnDefinition Width="262*"/>
+            <ColumnDefinition Width="217*"/>
+        </Grid.ColumnDefinitions>
+        <ListBox x:Name="InterfaceProfiles"
+        	HorizontalAlignment="Left" Height="158" Margin="10,33,0,0" VerticalAlignment="Top" Width="227">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
@@ -33,6 +35,10 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        <Label Content="Network Interface Profiles" HorizontalAlignment="Left" Height="23" Margin="10,5,0,0" VerticalAlignment="Top" Width="166"/>
+        <ListBox HorizontalAlignment="Left" Height="158" Margin="10,34,0,0" VerticalAlignment="Top" Width="245" Grid.Column="1"/>
+        <Label Content="Network Lists" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="1" Height="26" Width="81" Margin="10,5,0,0"/>
+        <Button Name="Delete" Content="Delete" Grid.Column="2" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
 
     </Grid>
 </UserControl>
