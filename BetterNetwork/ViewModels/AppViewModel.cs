@@ -26,16 +26,31 @@ namespace BetterNetwork.ViewModels
             }
         }
 
-        private ObservableCollection<InterfaceProfile> ToBeDeletedInterfaces { get; set; }
+        private ObservableCollection<NetworkProfile> _networkProfiles;
+        public ObservableCollection<NetworkProfile>  NetworkProfiles
+        {
+            get { return _networkProfiles; }
+            set
+            {
+                _networkProfiles = value; 
+                NotifyOfPropertyChange(() => NetworkProfiles);
+            }
+        }
+
+        private ObservableCollection<InterfaceProfile> ToDeleteInterfaces { get; set; }
+        private ObservableCollection<NetworkProfile> ToDeleteNetworks { get; set; } 
         #endregion
 
         public AppViewModel()
         {
             InterfaceProfiles = new ObservableCollection<InterfaceProfile>();
-            ToBeDeletedInterfaces = new ObservableCollection<InterfaceProfile>();
+            NetworkProfiles = new ObservableCollection<NetworkProfile>();
+            ToDeleteInterfaces = new ObservableCollection<InterfaceProfile>();
+            ToDeleteNetworks = new ObservableCollection<NetworkProfile>();
 
             // Load all interfaces
             GetInterfaceProfiles();
+            GetNetworkProfiles();
         }
 
         #region Network Interfaces Profiles
@@ -87,6 +102,7 @@ namespace BetterNetwork.ViewModels
         }
         #endregion
 
+        #region Network List Profiles
         public void GetNetworkProfiles()
         {
             try
@@ -97,8 +113,14 @@ namespace BetterNetwork.ViewModels
 
                 foreach (var profile in profiles.GetSubKeyNames())
                 {
-                        
+                    var name = profiles.OpenSubKey(profile).GetValue("ProfileName");
+                    var path = profiles.Name + "\\" + profile;
+
+                    NetworkProfiles.Add(new NetworkProfile {Name = (string)name, RegistryPath = path});
                 }
+
+                registry.Close();
+                profiles.Close();
             }
             catch (Exception e)
             {
@@ -106,30 +128,78 @@ namespace BetterNetwork.ViewModels
             }
         }
 
+        public void DeleteNetworkProfiles(NetworkProfile profile)
+        {
+            try
+            {
+                // Delete from registry
+                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                var path = profile.RegistryPath.Substring(registry.Name.Length + 1);
+                registry.DeleteSubKeyTree(path);
+
+                // Then delete from Network Profiles collection so view get updated
+                NetworkProfiles.Remove(profile);
+            }
+            catch (Exception e)
+            {
+                
+            }
+        }
+        #endregion
+
         #region Events Handler
-        public void NetworkChecked(RoutedEventArgs e)
+        public void InterfaceChecked(RoutedEventArgs e)
         {
             var item = e.Source as CheckBox;
 
             var profile = InterfaceProfiles.First(x => x.Name == (string)item.Content);
-            if (!ToBeDeletedInterfaces.Contains(profile))
-                ToBeDeletedInterfaces.Add(profile);
+            if (!ToDeleteInterfaces.Contains(profile))
+                ToDeleteInterfaces.Add(profile);
+        }
+
+        public void InterfaceUnchecked(RoutedEventArgs e)
+        {
+            var item = e.Source as CheckBox;
+
+            var profile = InterfaceProfiles.First(x => x.Name == (string)item.Content);
+            if (ToDeleteInterfaces.Contains(profile))
+                ToDeleteInterfaces.Remove(profile);
+        }
+
+        public void NetworkChecked(RoutedEventArgs e)
+        {
+            var item = e.Source as CheckBox;
+
+            var profile = NetworkProfiles.First(x => x.Name == (string)item.Content);
+            if (!ToDeleteNetworks.Contains(profile))
+                ToDeleteNetworks.Add(profile);
         }
 
         public void NetworkUnchecked(RoutedEventArgs e)
         {
             var item = e.Source as CheckBox;
 
-            var profile = InterfaceProfiles.First(x => x.Name == (string)item.Content);
-            if (ToBeDeletedInterfaces.Contains(profile))
-                ToBeDeletedInterfaces.Remove(profile);
+            var profile = NetworkProfiles.First(x => x.Name == (string)item.Content);
+            if (ToDeleteNetworks.Contains(profile))
+                ToDeleteNetworks.Remove(profile);
         }
 
         public void Delete()
         {
-            foreach (var beDeletedInterface in ToBeDeletedInterfaces)
+            if (ToDeleteInterfaces.Count != 0)
             {
-                DeleteInterfaceProfiles(beDeletedInterface);
+                foreach (var interfaceProfile in InterfaceProfiles)
+                {
+                    DeleteInterfaceProfiles(interfaceProfile);
+                }
+            }
+
+            if (ToDeleteNetworks.Count != 0)
+            {
+                foreach (var networkProfile in ToDeleteNetworks)
+                {
+                    DeleteNetworkProfiles(networkProfile);
+                }
             }
         }
         #endregion

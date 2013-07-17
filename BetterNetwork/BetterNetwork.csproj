@@ -82,6 +82,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Models\InterfaceProfile.cs" />
+    <Compile Include="Models\NetworkProfile.cs" />
     <Compile Include="ViewModels\AppViewModel.cs" />
     <Compile Include="Views\AppView.xaml.cs">
       <DependentUpon>AppView.xaml</DependentUpon>

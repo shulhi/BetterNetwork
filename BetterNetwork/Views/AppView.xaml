@@ -20,6 +20,30 @@
                         <CheckBox Content="{Binding Name}">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Checked">
+                                    <cal:ActionMessage MethodName="InterfaceChecked">
+                                        <cal:Parameter Value="$eventArgs" />
+                                    </cal:ActionMessage>
+                                </i:EventTrigger>
+                                <i:EventTrigger EventName="Unchecked">
+                                    <cal:ActionMessage MethodName="InterfaceUnchecked">
+                                        <cal:Parameter Value="$eventArgs" />
+                                    </cal:ActionMessage>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </CheckBox>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Label Content="Network Interface Profiles" HorizontalAlignment="Left" Height="23" Margin="10,5,0,0" VerticalAlignment="Top" Width="166"/>
+        <ListBox x:Name="NetworkProfiles"
+            HorizontalAlignment="Left" Height="158" Margin="10,34,0,0" VerticalAlignment="Top" Width="245" Grid.Column="1">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <CheckBox Content="{Binding Name}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Checked">
                                     <cal:ActionMessage MethodName="NetworkChecked">
                                         <cal:Parameter Value="$eventArgs" />
                                     </cal:ActionMessage>
@@ -35,8 +59,6 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Label Content="Network Interface Profiles" HorizontalAlignment="Left" Height="23" Margin="10,5,0,0" VerticalAlignment="Top" Width="166"/>
-        <ListBox HorizontalAlignment="Left" Height="158" Margin="10,34,0,0" VerticalAlignment="Top" Width="245" Grid.Column="1"/>
         <Label Content="Network Lists" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="1" Height="26" Width="81" Margin="10,5,0,0"/>
         <Button Name="Delete" Content="Delete" Grid.Column="2" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
 
