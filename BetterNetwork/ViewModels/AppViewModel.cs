@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security;
 
 namespace BetterNetwork.ViewModels
 {
@@ -94,15 +95,29 @@ namespace BetterNetwork.ViewModels
                 interfaces.Close();
                 profiles.Close();
             }
-            catch (Exception e)
+            catch (SecurityException e)
             {
-                Console.WriteLine(e);
+                MessageBox.Show(e.Message + " Please run as administrator.", "Admin rights required");
             }
         }
 
         public void DeleteInterfaceProfiles(InterfaceProfile profile)
         {
             // TODO: Implement delete subkeytree
+            try
+            {
+                // Delete from registry
+                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
+                var path = profile.RegistryPath.Substring(registry.Name.Length + 1);
+                registry.DeleteSubKeyTree(path);
+
+                // Then delete from Network Profiles collection so view get updated
+                InterfaceProfiles.Remove(profile);
+            }
+            catch (SecurityException e)
+            {
+                MessageBox.Show(e.Message + " Please run as administrator.", "Admin rights required");
+            }
         }
         
         private static string ExtractNetworkNames(byte[] metadata)
@@ -141,9 +156,9 @@ namespace BetterNetwork.ViewModels
                 registry.Close();
                 profiles.Close();
             }
-            catch (Exception e)
+            catch (SecurityException e)
             {
-                Console.WriteLine(e);
+                MessageBox.Show(e.Message + " Please run as administrator to pull out network lists.", "Admin rights required");
             }
         }
 
@@ -152,16 +167,16 @@ namespace BetterNetwork.ViewModels
             try
             {
                 // Delete from registry
-                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
                 var path = profile.RegistryPath.Substring(registry.Name.Length + 1);
                 registry.DeleteSubKeyTree(path);
 
                 // Then delete from Network Profiles collection so view get updated
                 NetworkProfiles.Remove(profile);
             }
-            catch (Exception e)
+            catch (SecurityException e)
             {
-                
+                MessageBox.Show(e.Message + " Please run as administrator.", "Admin rights required");
             }
         }
         #endregion
@@ -233,6 +248,8 @@ namespace BetterNetwork.ViewModels
                     DeleteNetworkProfiles(networkProfile);
                 }
             }
+
+            MessageBox.Show("You will need to restart your system in order to make the changes effective.");
         }
 
         public void About()
