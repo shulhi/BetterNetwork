@@ -256,7 +256,7 @@ namespace BetterNetwork.ViewModels
                 }
             }
 
-            MessageBox.Show("You will need to restart your system in order to make the changes effective.");
+            MessageBox.Show("Changes will only take effect after system restart.");
         }
 
         public void About()

@@ -1,13 +1,10 @@
 ﻿<Window x:Class="BetterNetwork.Views.AboutView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="About" Height="207" Width="410" ResizeMode="NoResize">
-    <Grid>
+        Title="About" Height="268" Width="446" ResizeMode="NoResize">
+    <Grid Margin="0,0,4,6">
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" 
-                   Text="This application is used to delete unwanted network list for Windows 8. Somehow, the feature is no longer available in Windows 8." 
-                   VerticalAlignment="Top" Height="35" Width="382"/>
-        <TextBlock HorizontalAlignment="Left" Margin="10,65,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="101" Width="382">
-            <Run Text="Author : Shulhi Sapli"/><LineBreak/><Run Text="Contact : shulhi@gmail.com / @shulhisapli"/><LineBreak/><Run/><LineBreak/>
-            <Run Text="Version : 1.0"/><LineBreak/><Run Text="License under MIT. Feel free to contribute to this project at Github."/></TextBlock>
+    		VerticalAlignment="Top" Height="99" Width="413"><Run Text="Description:"/><LineBreak/><Run Text="Under Windows 8, access to delete wireless networks are no longer available. You can still use netsh command to do this. However it only deletes the network profile but not network list (i.e. you might notice issues such as Network 1, 2, 3, ... etc). I have not found an easier way to delete both under Windows 8, thus the existence of this tool."/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="10,114,0,10" TextWrapping="Wrap" Width="413"><Run Text="Author : Shulhi Sapli"/><LineBreak/><Run Text="Contact : shulhi@gmail.com / @shulhisapli"/><LineBreak/><Run/><LineBreak/><Run Text="Version : 1.0"/><LineBreak/><Run Text="Licensed under MIT License. "/><LineBreak/><Run Text="Contribute to this project at Github. https://github.com/shulhi/BetterNetwork"/></TextBlock>
     </Grid>
 </Window>
