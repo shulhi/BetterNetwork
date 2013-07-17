@@ -6,11 +6,11 @@
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
              mc:Ignorable="d" Width="724.1" Height="206">
-    <Grid HorizontalAlignment="Left" Width="724">
+    <Grid HorizontalAlignment="Left" Width="724" Margin="0,0,0,10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="245*"/>
-            <ColumnDefinition Width="262*"/>
-            <ColumnDefinition Width="217*"/>
+            <ColumnDefinition Width="263*"/>
+            <ColumnDefinition Width="216*"/>
         </Grid.ColumnDefinitions>
         <ListBox x:Name="InterfaceProfiles"
         	HorizontalAlignment="Left" Height="158" Margin="10,33,0,0" VerticalAlignment="Top" Width="227">
@@ -60,7 +60,16 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <Label Content="Network Lists" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="1" Height="26" Width="81" Margin="10,5,0,0"/>
-        <Button Name="Delete" Content="Delete" Grid.Column="2" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
-
+        <Button Name="Delete" Content="Delete" Grid.Column="2" HorizontalAlignment="Left" Margin="110,107,0,0" VerticalAlignment="Top" Width="96" Height="20"/>
+        <GroupBox Grid.Column="2" Header="Settings" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Height="58" Width="196">
+            <StackPanel>
+                <RadioButton Name="ThirtyTwoBitChecked" Content="32-bit system"/>
+                <RadioButton Name="SixtyFourBitChecked" Content="64-bit system" IsChecked="True"/>
+            </StackPanel>
+        </GroupBox>
+        <Label Content="About" Grid.Column="2" HorizontalAlignment="Left" Margin="164,166,0,0" VerticalAlignment="Top" Width="42"/>
+        <Label Content="Donate" Grid.Column="2" HorizontalAlignment="Left" Margin="110,165,0,0" VerticalAlignment="Top"/>
+        <Button Name="LoadAll" Content="Load All" 
+                Grid.Column="2" HorizontalAlignment="Left" Margin="10,107,0,0" VerticalAlignment="Top" Width="96"/>
     </Grid>
 </UserControl>
