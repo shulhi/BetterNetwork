@@ -14,7 +14,7 @@ using System;
 namespace BetterNetwork.ViewModels
 {
     [Export(typeof(AppViewModel))]
-    public class AppViewModel : PropertyChangedBase
+    public partial class AppViewModel : PropertyChangedBase
     {
         #region Properties
         private ObservableCollection<InterfaceProfile> _interfaceProfiles; 
@@ -150,66 +150,78 @@ namespace BetterNetwork.ViewModels
         }
         #endregion
 
-        #region Network List Profiles
         public void GetNetworkProfiles()
         {
             try
             {
                 var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
-                // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles
-                var profiles = registry.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles");
-                if(profiles != null)
+                var unmanageds =
+                    registry.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\Unmanaged");
+
+                if (unmanageds != null)
                 {
-                    foreach (var profile in profiles.GetSubKeyNames())
+                    foreach (var unmanaged in unmanageds.GetSubKeyNames())
                     {
-                        var name = profiles.OpenSubKey(profile).GetValue("ProfileName");
-                        var path = profiles.Name + "\\" + profile;
+                        var subkey = unmanageds.OpenSubKey(unmanaged);
 
-                        NetworkProfiles.Add(new NetworkProfile {Name = (string)name, RegistryPath = path});
+                        if (subkey != null)
+                        {
+                            var desc = subkey.GetValue("Description");
+                            var guid = subkey.GetValue("ProfileGuid");
+                            var signaturePath = unmanageds.Name + "\\" + unmanaged;
+                            var profilepath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles\" + guid;
+
+                            var network = new NetworkProfile()
+                                {
+                                    Name = (string)desc,
+                                    ProfileGuid = (string)guid,
+                                    SignatureRegistryPath = signaturePath,
+                                    ProfileRegistryPath = profilepath,
+                                    ManageType = "Unmanaged"
+                                };
+
+                            NetworkProfiles.Add(network);
+
+                            subkey.Close();
+                        }
                     }
-
-                    profiles.Close();
+                    unmanageds.Close();
                 }
-
-                registry.Close();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                if (ex is SecurityException || ex is UnauthorizedAccessException)
-                    MessageBox.Show(ex.Message + " Please run as administrator to pull out network lists.", "Admin rights required");
-                if (ex is ArgumentException || ex is NullReferenceException)
-                    MessageBox.Show(ex.Message, "Could not find registry key");
+                throw;
             }
         }
 
-        public void DeleteNetworkProfiles(NetworkProfile profile)
-        {
-            try
-            {
-                // Delete from registry
-                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
-                var path = profile.RegistryPath.Substring(registry.Name.Length + 1);
-                registry.DeleteSubKeyTree(path);
+        //public void DeleteNetworkProfiles(NetworkProfile profile)
+        //{
+        //    try
+        //    {
+        //        // Delete from registry
+        //        var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
+        //        var path = profile.RegistryPath.Substring(registry.Name.Length + 1);
+        //        registry.DeleteSubKeyTree(path);
 
-                // Then delete from Network Profiles collection so view get updated
-                NetworkProfiles.Remove(profile);
-            }
-            catch (Exception ex)
-            {
-                if (ex is SecurityException || ex is UnauthorizedAccessException)
-                    MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
-                if (ex is ArgumentException || ex is NullReferenceException)
-                    MessageBox.Show(ex.Message, "Could not find registry key");
-            }
-        }
-        #endregion
+        //        // Then delete from Network Profiles collection so view get updated
+        //        NetworkProfiles.Remove(profile);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        if (ex is SecurityException || ex is UnauthorizedAccessException)
+        //            MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
+        //        if (ex is ArgumentException || ex is NullReferenceException)
+        //            MessageBox.Show(ex.Message, "Could not find registry key");
+        //    }
+        //}
+        //#endregion
 
         #region Events Handler
         public void InterfaceChecked(RoutedEventArgs e)
         {
             var item = e.Source as CheckBox;
+            var profile = item.DataContext as InterfaceProfile;
 
-            var profile = InterfaceProfiles.First(x => x.Name == (string)item.Content);
             if (!ToDeleteInterfaces.Contains(profile))
                 ToDeleteInterfaces.Add(profile);
         }
@@ -264,13 +276,13 @@ namespace BetterNetwork.ViewModels
                 }
             }
 
-            if (ToDeleteNetworks.Count != 0)
-            {
-                foreach (var networkProfile in ToDeleteNetworks)
-                {
-                    DeleteNetworkProfiles(networkProfile);
-                }
-            }
+            //if (ToDeleteNetworks.Count != 0)
+            //{
+            //    foreach (var networkProfile in ToDeleteNetworks)
+            //    {
+            //        DeleteNetworkProfiles(networkProfile);
+            //    }
+            //}
 
             // Clear trackers collection
             ToDeleteNetworks.Clear();
