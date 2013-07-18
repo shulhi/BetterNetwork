@@ -194,27 +194,26 @@ namespace BetterNetwork.ViewModels
             }
         }
 
-        //public void DeleteNetworkProfiles(NetworkProfile profile)
-        //{
-        //    try
-        //    {
-        //        // Delete from registry
-        //        var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
-        //        var path = profile.RegistryPath.Substring(registry.Name.Length + 1);
-        //        registry.DeleteSubKeyTree(path);
+        public void DeleteNetworkProfiles(NetworkProfile profile)
+        {
+            try
+            {
+                // Delete from registry
+                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
+                registry.DeleteSubKeyTree(profile.ProfileRegistryPath, false);
+                registry.DeleteSubKey(profile.SignatureRegistryPath, false);
 
-        //        // Then delete from Network Profiles collection so view get updated
-        //        NetworkProfiles.Remove(profile);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        if (ex is SecurityException || ex is UnauthorizedAccessException)
-        //            MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
-        //        if (ex is ArgumentException || ex is NullReferenceException)
-        //            MessageBox.Show(ex.Message, "Could not find registry key");
-        //    }
-        //}
-        //#endregion
+                // Then delete from Network Profiles collection so view get updated
+                NetworkProfiles.Remove(profile);
+            }
+            catch (Exception ex)
+            {
+                if (ex is SecurityException || ex is UnauthorizedAccessException)
+                    MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
+                if (ex is ArgumentException || ex is NullReferenceException)
+                    MessageBox.Show(ex.Message, "Could not find registry key");
+            }
+        }
 
         #region Events Handler
         public void InterfaceChecked(RoutedEventArgs e)
