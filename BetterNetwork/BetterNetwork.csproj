@@ -118,7 +118,6 @@
     <Compile Include="CustomWindowManager.cs" />
     <Compile Include="Models\InterfaceProfile.cs" />
     <Compile Include="Models\NetworkProfile.cs" />
-    <Compile Include="Models\NetworkSignature.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ViewModels\AboutViewModel.cs" />
     <Compile Include="ViewModels\AppViewModel.cs" />
