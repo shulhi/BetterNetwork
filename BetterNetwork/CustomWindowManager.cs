@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace BetterNetwork
             window.ResizeMode = ResizeMode.NoResize;
             window.Title = "Better Network";
 
-            var url = new Uri("pack://application:,,,/BetterNetwork;component/Images/Icon.ico",UriKind.RelativeOrAbsolute);
+            var url = new Uri("pack://application:,,,/Images/Icon.ico",UriKind.RelativeOrAbsolute);
             window.Icon = BitmapFrame.Create(url);
 
             return window;
