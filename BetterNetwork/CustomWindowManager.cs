@@ -1,12 +1,6 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using Caliburn.Micro;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace BetterNetwork
@@ -19,7 +13,7 @@ namespace BetterNetwork
             Window window = base.EnsureWindow(model, view, isDialog);
 
             //window.SizeToContent = SizeToContent.Manual;
-            window.ResizeMode = ResizeMode.NoResize;
+            window.ResizeMode = ResizeMode.CanMinimize;
             window.Title = "Better Network";
 
             var url = new Uri("pack://application:,,,/Images/Icon.ico",UriKind.RelativeOrAbsolute);
