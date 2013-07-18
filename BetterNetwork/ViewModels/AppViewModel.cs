@@ -80,19 +80,25 @@ namespace BetterNetwork.ViewModels
                 var interfaces = registry.OpenSubKey(@"SOFTWARE\Microsoft\WlanSvc\Interfaces\");
                 if (interfaces != null)
                 {
-                    var profiles = interfaces.OpenSubKey(interfaces.GetSubKeyNames().First() + @"\Profiles");
-
-                    foreach (var profile in profiles.GetSubKeyNames())
+                    // This is one ugly nesting
+                    foreach (var inter in interfaces.GetSubKeyNames())
                     {
-                        var metadata = profiles.OpenSubKey(profile + @"\Metadata").GetValue("Channel Hints");
-                        var network = ExtractNetworkNames((byte[]) metadata);
-                        var path = profiles.Name + "\\" + profile;
+                        var profiles = interfaces.OpenSubKey(inter + @"\Profiles");
 
-                        InterfaceProfiles.Add(new InterfaceProfile {Name = network, RegistryPath = path});
+                        if(profiles != null)
+                        {
+                            foreach (var profile in profiles.GetSubKeyNames())
+                            {
+                                var metadata = profiles.OpenSubKey(profile + @"\Metadata").GetValue("Channel Hints");
+                                var network = ExtractNetworkNames((byte[])metadata);
+                                var path = profiles.Name + "\\" + profile;
+
+                                InterfaceProfiles.Add(new InterfaceProfile { Name = network, RegistryPath = path });
+                            }
+                            profiles.Close();
+                        }
                     }
-
-                    interfaces.Close();
-                    profiles.Close();
+                    interfaces.Close();    
                 }
 
                 registry.Close();
