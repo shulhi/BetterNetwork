@@ -5,6 +5,6 @@
     <Grid Margin="0,0,4,6">
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" 
     		VerticalAlignment="Top" Height="99" Width="413"><Run Text="Description:"/><LineBreak/><Run Text="Under Windows 8, access to delete wireless networks are no longer available. You can still use netsh command to do this. However it only deletes the network profile but not network list (i.e. you might notice issues such as Network 1, 2, 3, ... etc). I have not found an easier way to delete both under Windows 8, thus the existence of this tool."/></TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="10,114,0,10" TextWrapping="Wrap" Width="413"><Run Text="Author : Shulhi Sapli"/><LineBreak/><Run Text="Contact : shulhi@gmail.com / @shulhisapli"/><LineBreak/><Run/><LineBreak/><Run Text="Version : 1.0"/><LineBreak/><Run Text="Licensed under MIT License. "/><LineBreak/><Run Text="Contribute to this project at Github. https://github.com/shulhi/BetterNetwork"/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="10,114,0,10" TextWrapping="Wrap" Width="413"><Run Text="Author : Shulhi Sapli"/><LineBreak/><Run Text="Contact : shulhi@gmail.com / @shulhisapli"/><LineBreak/><Run/><LineBreak/><Run Text="Version : 1.0.1"/><LineBreak/><Run Text="Licensed under MIT License. "/><LineBreak/><Run Text="Contribute to this project at Github. https://github.com/shulhi/BetterNetwork"/></TextBlock>
     </Grid>
 </Window>

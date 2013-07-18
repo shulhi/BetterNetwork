@@ -9,6 +9,7 @@ using Microsoft.Win32;
 using System.Linq;
 using System.Text;
 using System.Security;
+using System;
 
 namespace BetterNetwork.ViewModels
 {
@@ -96,9 +97,12 @@ namespace BetterNetwork.ViewModels
 
                 registry.Close();
             }
-            catch (SecurityException e)
+            catch (Exception ex)
             {
-                MessageBox.Show(e.Message + " Please run as administrator.", "Admin rights required");
+                if(ex is SecurityException || ex is UnauthorizedAccessException)
+                    MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
+                if (ex is ArgumentException || ex is NullReferenceException)
+                    MessageBox.Show(ex.Message, "Could not find registry key");
             }
         }
 
@@ -115,9 +119,12 @@ namespace BetterNetwork.ViewModels
                 // Then delete from Network Profiles collection so view get updated
                 InterfaceProfiles.Remove(profile);
             }
-            catch (SecurityException e)
+            catch (Exception ex)
             {
-                MessageBox.Show(e.Message + " Please run as administrator.", "Admin rights required");
+                if (ex is SecurityException || ex is UnauthorizedAccessException)
+                    MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
+                if (ex is ArgumentException || ex is NullReferenceException)
+                    MessageBox.Show(ex.Message, "Could not find registry key");
             }
         }
         
@@ -160,9 +167,12 @@ namespace BetterNetwork.ViewModels
 
                 registry.Close();
             }
-            catch (SecurityException e)
+            catch (Exception ex)
             {
-                MessageBox.Show(e.Message + " Please run as administrator to pull out network lists.", "Admin rights required");
+                if (ex is SecurityException || ex is UnauthorizedAccessException)
+                    MessageBox.Show(ex.Message + " Please run as administrator to pull out network lists.", "Admin rights required");
+                if (ex is ArgumentException || ex is NullReferenceException)
+                    MessageBox.Show(ex.Message, "Could not find registry key");
             }
         }
 
@@ -178,9 +188,12 @@ namespace BetterNetwork.ViewModels
                 // Then delete from Network Profiles collection so view get updated
                 NetworkProfiles.Remove(profile);
             }
-            catch (SecurityException e)
+            catch (Exception ex)
             {
-                MessageBox.Show(e.Message + " Please run as administrator.", "Admin rights required");
+                if (ex is SecurityException || ex is UnauthorizedAccessException)
+                    MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
+                if (ex is ArgumentException || ex is NullReferenceException)
+                    MessageBox.Show(ex.Message, "Could not find registry key");
             }
         }
         #endregion
@@ -239,7 +252,7 @@ namespace BetterNetwork.ViewModels
         {
             if (ToDeleteInterfaces.Count != 0)
             {
-                foreach (var interfaceProfile in InterfaceProfiles)
+                foreach (var interfaceProfile in ToDeleteInterfaces)
                 {
                     DeleteInterfaceProfiles(interfaceProfile);
                 }
@@ -252,6 +265,10 @@ namespace BetterNetwork.ViewModels
                     DeleteNetworkProfiles(networkProfile);
                 }
             }
+
+            // Clear trackers collection
+            ToDeleteNetworks.Clear();
+            ToDeleteInterfaces.Clear();
 
             MessageBox.Show("Changes will only take effect after system restart.");
         }
