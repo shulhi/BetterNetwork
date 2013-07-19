@@ -62,7 +62,7 @@
 
         <StackPanel Grid.Row="1" Grid.Column="0">
             <Label Content="Interface Profiles" Margin="10,0,0,0"/>
-            <ListView HorizontalAlignment="Right" Height="172" Width="494" Margin="0,0,10,0">
+            <ListView x:Name="InterfaceProfiles" HorizontalAlignment="Right" Height="172" Width="494" Margin="0,0,10,0">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn>

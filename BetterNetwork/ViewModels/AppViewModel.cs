@@ -75,41 +75,63 @@ namespace BetterNetwork.ViewModels
         {
             try
             {
-                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
-
+                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
+                                                       SixtyFourBitChecked
+                                                           ? RegistryView.Registry64
+                                                           : RegistryView.Registry32);
                 var interfaces = registry.OpenSubKey(@"SOFTWARE\Microsoft\WlanSvc\Interfaces\");
+
                 if (interfaces != null)
                 {
-                    // This is one ugly nesting
-                    foreach (var inter in interfaces.GetSubKeyNames())
+                    foreach (var subkey in interfaces.GetSubKeyNames())
                     {
-                        var profiles = interfaces.OpenSubKey(inter + @"\Profiles");
-
-                        if(profiles != null)
+                        var profile = interfaces.OpenSubKey(subkey);
+                        var items = (string[]) profile.GetValue("ProfileList");
+                        
+                        if (items != null)
                         {
-                            foreach (var profile in profiles.GetSubKeyNames())
+                            foreach (var item in items)
                             {
-                                var metadata = profiles.OpenSubKey(profile + @"\Metadata").GetValue("Channel Hints");
-                                var network = ExtractNetworkNames((byte[])metadata);
-                                var path = profiles.Name + "\\" + profile;
-
-                                InterfaceProfiles.Add(new InterfaceProfile { Name = network, RegistryPath = path });
+                                var interfaceProfile = GetInterfaceProfileMetadata(subkey, item);
+                                InterfaceProfiles.Add(interfaceProfile);
                             }
-                            profiles.Close();
                         }
                     }
-                    interfaces.Close();    
                 }
-
-                registry.Close();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                if(ex is SecurityException || ex is UnauthorizedAccessException)
-                    MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
-                if (ex is ArgumentException || ex is NullReferenceException)
-                    MessageBox.Show(ex.Message, "Could not find registry key");
+                throw;
             }
+        }
+
+        private InterfaceProfile GetInterfaceProfileMetadata(string interfaceGuid, string profileGuid)
+        {
+            var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
+                                                       SixtyFourBitChecked
+                                                           ? RegistryView.Registry64
+                                                           : RegistryView.Registry32);
+
+            var profile = registry.OpenSubKey(@"SOFTWARE\Microsoft\WlanSvc\Interfaces\" + interfaceGuid + @"\Profiles\" + profileGuid + @"\Metadata");
+            
+            if (profile != null)
+            {
+                var channel = (byte[])profile.GetValue("Channel Hints");
+                if (channel != null)
+                {
+                    var name = ExtractNetworkNames(channel);
+
+                    return new InterfaceProfile
+                        {
+                            Name = name, 
+                            RegistryPath = profile.Name,
+                            InterfaceGuid = interfaceGuid,
+                            ProfileGuid = profileGuid
+                        };
+                }
+            }
+
+            return null;
         }
 
         public void DeleteInterfaceProfiles(InterfaceProfile profile)
@@ -251,7 +273,9 @@ namespace BetterNetwork.ViewModels
             if (ToDeleteNetworks.Contains(profile))
                 ToDeleteNetworks.Remove(profile);
         }
+        #endregion
 
+        #region Commands
         public void LoadAll()
         {
             // Clear collections so no duplicate
