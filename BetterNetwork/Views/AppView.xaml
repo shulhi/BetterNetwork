@@ -38,12 +38,12 @@
                                     <CheckBox>
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="Checked">
-                                                <cal:ActionMessage MethodName="InterfaceChecked">
+                                                <cal:ActionMessage MethodName="NetworkChecked">
                                                     <cal:Parameter Value="$eventArgs" />
                                                 </cal:ActionMessage>
                                             </i:EventTrigger>
                                             <i:EventTrigger EventName="Unchecked">
-                                                <cal:ActionMessage MethodName="InterfaceUnchecked">
+                                                <cal:ActionMessage MethodName="NetworkUnchecked">
                                                     <cal:Parameter Value="$eventArgs" />
                                                 </cal:ActionMessage>
                                             </i:EventTrigger>
@@ -65,7 +65,29 @@
             <ListView HorizontalAlignment="Right" Height="172" Width="494" Margin="0,0,10,0">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn/>
+                        <GridViewColumn>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox>
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Checked">
+                                                <cal:ActionMessage MethodName="InterfaceChecked">
+                                                    <cal:Parameter Value="$eventArgs" />
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="Unchecked">
+                                                <cal:ActionMessage MethodName="InterfaceUnchecked">
+                                                    <cal:Parameter Value="$eventArgs" />
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </CheckBox>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Profile" DisplayMemberBinding="{Binding Name}" Width="auto"/>
+                        <GridViewColumn Header="Profile Guid" DisplayMemberBinding="{Binding ProfileGuid}" Width="auto"/>
+                        <GridViewColumn Header="Interface Guid" DisplayMemberBinding="{Binding InterfaceGuid}" Width="auto"/>
                     </GridView>
                 </ListView.View>
             </ListView>
