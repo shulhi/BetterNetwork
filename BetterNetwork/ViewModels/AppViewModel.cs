@@ -71,7 +71,7 @@ namespace BetterNetwork.ViewModels
         }
 
         #region Network Interfaces Profiles
-        public void GetInterfaceProfiles()
+        public void GetInterfaces()
         {
             try
             {
@@ -92,7 +92,7 @@ namespace BetterNetwork.ViewModels
                         {
                             foreach (var item in items)
                             {
-                                var interfaceProfile = GetInterfaceProfileMetadata(subkey, item);
+                                var interfaceProfile = GetInterfaceMetadata(subkey, item);
                                 InterfaceProfiles.Add(interfaceProfile);
                             }
                         }
@@ -105,7 +105,7 @@ namespace BetterNetwork.ViewModels
             }
         }
 
-        private InterfaceProfile GetInterfaceProfileMetadata(string interfaceGuid, string profileGuid)
+        private InterfaceProfile GetInterfaceMetadata(string interfaceGuid, string profileGuid)
         {
             var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
                                                        SixtyFourBitChecked
@@ -172,48 +172,61 @@ namespace BetterNetwork.ViewModels
         }
         #endregion
 
-        public void GetNetworkProfiles()
+        #region Network List
+        public void GetNetworks()
         {
             try
             {
                 var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
-                var unmanageds =
+                var unmanagedKeys =
                     registry.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\Unmanaged");
 
-                if (unmanageds != null)
+                if (unmanagedKeys != null)
                 {
-                    foreach (var unmanaged in unmanageds.GetSubKeyNames())
+                    foreach (var unmanaged in unmanagedKeys.GetSubKeyNames())
                     {
-                        var subkey = unmanageds.OpenSubKey(unmanaged);
+                        var network = GetNetworkMetadata(unmanaged);
 
-                        if (subkey != null)
-                        {
-                            var desc = subkey.GetValue("Description");
-                            var guid = subkey.GetValue("ProfileGuid");
-                            var signaturePath = unmanageds.Name + "\\" + unmanaged;
-                            var profilepath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles\" + guid;
-
-                            var network = new NetworkProfile()
-                                {
-                                    Name = (string)desc,
-                                    ProfileGuid = (string)guid,
-                                    SignatureRegistryPath = signaturePath,
-                                    ProfileRegistryPath = profilepath,
-                                    ManageType = "Unmanaged"
-                                };
-
+                        if(network != null)
                             NetworkProfiles.Add(network);
-
-                            subkey.Close();
-                        }
                     }
-                    unmanageds.Close();
+                    unmanagedKeys.Close();
                 }
             }
             catch (Exception)
             {
                 throw;
             }
+        }
+
+        private NetworkProfile GetNetworkMetadata(string unmanaged)
+        {
+            var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
+            var unmanagedSubKeys =
+                registry.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\Unmanaged\" + unmanaged);
+
+            if (unmanagedSubKeys != null)
+            {
+                var desc = unmanagedSubKeys.GetValue("Description");
+                var guid = unmanagedSubKeys.GetValue("ProfileGuid");
+                var signaturePath = unmanagedSubKeys.Name + "\\" + unmanaged;
+                var profilepath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles\" + guid;
+
+                var network = new NetworkProfile()
+                {
+                    Name = (string)desc,
+                    ProfileGuid = (string)guid,
+                    SignatureRegistryPath = signaturePath,
+                    ProfileRegistryPath = profilepath,
+                    ManageType = "Unmanaged"
+                };
+
+                unmanagedSubKeys.Close();
+
+                return network;
+            }
+
+            return null;
         }
 
         public void DeleteNetworkProfiles(NetworkProfile profile)
@@ -236,6 +249,7 @@ namespace BetterNetwork.ViewModels
                     MessageBox.Show(ex.Message, "Could not find registry key");
             }
         }
+        #endregion
 
         #region Events Handler
         public void InterfaceChecked(RoutedEventArgs e)
@@ -285,8 +299,8 @@ namespace BetterNetwork.ViewModels
             ToDeleteNetworks.Clear();
 
             // Load all interfaces
-            GetInterfaceProfiles();
-            GetNetworkProfiles();
+            GetInterfaces();
+            GetNetworks();
         }
 
         public void Delete()
