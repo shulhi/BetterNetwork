@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Windows;
@@ -39,8 +40,33 @@ namespace BetterNetwork.ViewModels
             }
         }
 
-        private ObservableCollection<InterfaceProfile> ToDeleteInterfaces { get; set; }
-        private ObservableCollection<NetworkProfile> ToDeleteNetworks { get; set; }
+        private ObservableCollection<InterfaceProfile> _toDeleteInterfaces;
+        public ObservableCollection<InterfaceProfile> ToDeleteInterfaces
+        {
+            get { return _toDeleteInterfaces; }
+            set 
+            {
+                _toDeleteInterfaces = value; 
+                NotifyOfPropertyChange(()=> ToDeleteInterfaces);
+            }
+
+        }
+
+        private ObservableCollection<NetworkProfile> _toDeleteNetworks; 
+        public ObservableCollection<NetworkProfile> ToDeleteNetworks
+        {
+            get { return _toDeleteNetworks; }
+            set 
+            { 
+                _toDeleteNetworks = value; 
+                NotifyOfPropertyChange(() => ToDeleteNetworks); 
+            }
+        }
+
+        public bool CanDelete
+        {
+            get { return ToDeleteNetworks.Count != 0 || ToDeleteInterfaces.Count != 0; }
+        }
 
         private bool _sixtyFourBitChecked;
         public bool SixtyFourBitChecked
@@ -68,6 +94,9 @@ namespace BetterNetwork.ViewModels
             ToDeleteNetworks = new ObservableCollection<NetworkProfile>();
 
             SixtyFourBitChecked = true;
+
+            ToDeleteInterfaces.CollectionChanged += (sender, args) => NotifyOfPropertyChange(() => CanDelete);
+            ToDeleteNetworks.CollectionChanged += (sender, args) => NotifyOfPropertyChange(() => CanDelete);
         }
 
         #region Network Interfaces Profiles
@@ -75,48 +104,47 @@ namespace BetterNetwork.ViewModels
         {
             try
             {
-                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
-                                                       SixtyFourBitChecked
-                                                           ? RegistryView.Registry64
-                                                           : RegistryView.Registry32);
+                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
                 var interfaces = registry.OpenSubKey(@"SOFTWARE\Microsoft\WlanSvc\Interfaces\");
 
-                if (interfaces != null)
+                if (interfaces == null) return;
+
+                foreach (var subkey in interfaces.GetSubKeyNames())
                 {
-                    foreach (var subkey in interfaces.GetSubKeyNames())
+                    var profile = interfaces.OpenSubKey(subkey);
+                    if (profile == null) continue;
+
+                    var items = (string[]) profile.GetValue("ProfileList");
+                    if (items == null) continue;
+                    
+                    foreach (var interfaceProfile in items.Select(item => GetInterfaceMetadata(subkey, item)).Where(interfaceProfile => interfaceProfile != null))
                     {
-                        var profile = interfaces.OpenSubKey(subkey);
-                        var items = (string[]) profile.GetValue("ProfileList");
-                        
-                        if (items != null)
-                        {
-                            foreach (var item in items)
-                            {
-                                var interfaceProfile = GetInterfaceMetadata(subkey, item);
-                                InterfaceProfiles.Add(interfaceProfile);
-                            }
-                        }
+                        InterfaceProfiles.Add(interfaceProfile);
                     }
+
+                    profile.Close();
                 }
+
+                registry.Close();
+                interfaces.Close();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                if (ex is SecurityException || ex is UnauthorizedAccessException)
+                    MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
+                if (ex is ArgumentException || ex is NullReferenceException)
+                    MessageBox.Show(ex.Message, "Could not find registry key");
             }
         }
 
         private InterfaceProfile GetInterfaceMetadata(string interfaceGuid, string profileGuid)
         {
-            var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
-                                                       SixtyFourBitChecked
-                                                           ? RegistryView.Registry64
-                                                           : RegistryView.Registry32);
-
-            var profile = registry.OpenSubKey(@"SOFTWARE\Microsoft\WlanSvc\Interfaces\" + interfaceGuid + @"\Profiles\" + profileGuid + @"\Metadata");
+            var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
+            var metadata = registry.OpenSubKey(@"SOFTWARE\Microsoft\WlanSvc\Interfaces\" + interfaceGuid + @"\Profiles\" + profileGuid + @"\Metadata");
             
-            if (profile != null)
+            if (metadata != null)
             {
-                var channel = (byte[])profile.GetValue("Channel Hints");
+                var channel = (byte[])metadata.GetValue("Channel Hints");
                 if (channel != null)
                 {
                     var name = ExtractNetworkNames(channel);
@@ -124,7 +152,7 @@ namespace BetterNetwork.ViewModels
                     return new InterfaceProfile
                         {
                             Name = name, 
-                            RegistryPath = profile.Name,
+                            RegistryPath = metadata.Name.Substring(0, metadata.Name.Length - @"\Metadata".Length),
                             InterfaceGuid = interfaceGuid,
                             ProfileGuid = profileGuid
                         };
@@ -136,16 +164,37 @@ namespace BetterNetwork.ViewModels
 
         public void DeleteInterfaceProfiles(InterfaceProfile profile)
         {
-            // TODO: Implement delete subkeytree
             try
             {
-                // Delete from registry
                 var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
-                var path = profile.RegistryPath.Substring(registry.Name.Length + 1);
-                registry.DeleteSubKeyTree(path);
+                registry.DeleteSubKeyTree(profile.RegistryPath.Substring(registry.Name.Length+1), false);
 
-                // Then delete from Network Profiles collection so view get updated
-                InterfaceProfiles.Remove(profile);
+                registry.Close();
+            }
+            catch (Exception ex)
+            {
+                if (ex is SecurityException || ex is UnauthorizedAccessException)
+                    MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
+                if (ex is ArgumentException || ex is NullReferenceException)
+                    MessageBox.Show(ex.Message, "Could not find registry key");
+            }
+        }
+
+        private void UpdateInterfaceProfileListKey()
+        {
+            try
+            {
+                var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
+                var grouped = InterfaceProfiles.GroupBy(i => i.InterfaceGuid, p => p.ProfileGuid,
+                                                        (key, g) => new { InterfaceGuid = key, ProfileGuids = g.ToList() });
+                foreach (var g in grouped)
+                {
+                    var profile = registry.OpenSubKey(@"SOFTWARE\Microsoft\WlanSvc\Interfaces\" + g.InterfaceGuid, true);
+                    if(profile != null)
+                        profile.SetValue("ProfileList", g.ProfileGuids.ToArray());
+                }
+
+                registry.Close();
             }
             catch (Exception ex)
             {
@@ -193,9 +242,10 @@ namespace BetterNetwork.ViewModels
                     unmanagedKeys.Close();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                if (ex is SecurityException)
+                    MessageBox.Show("Administrator right is required.");
             }
         }
 
@@ -209,8 +259,8 @@ namespace BetterNetwork.ViewModels
             {
                 var desc = unmanagedSubKeys.GetValue("Description");
                 var guid = unmanagedSubKeys.GetValue("ProfileGuid");
-                var signaturePath = unmanagedSubKeys.Name + "\\" + unmanaged;
-                var profilepath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles\" + guid;
+                var signaturePath = unmanagedSubKeys.Name;
+                var profilepath = registry.Name + @"\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles\" + guid;
 
                 var network = new NetworkProfile()
                 {
@@ -235,11 +285,8 @@ namespace BetterNetwork.ViewModels
             {
                 // Delete from registry
                 var registry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, SixtyFourBitChecked ? RegistryView.Registry64 : RegistryView.Registry32);
-                registry.DeleteSubKeyTree(profile.ProfileRegistryPath, false);
-                registry.DeleteSubKey(profile.SignatureRegistryPath, false);
-
-                // Then delete from Network Profiles collection so view get updated
-                NetworkProfiles.Remove(profile);
+                registry.DeleteSubKeyTree(profile.ProfileRegistryPath.Substring(registry.Name.Length + 1), false);
+                registry.DeleteSubKeyTree(profile.SignatureRegistryPath.Substring(registry.Name.Length + 1), false);
             }
             catch (Exception ex)
             {
@@ -255,37 +302,49 @@ namespace BetterNetwork.ViewModels
         public void InterfaceChecked(RoutedEventArgs e)
         {
             var item = e.Source as CheckBox;
-            var profile = item.DataContext as InterfaceProfile;
 
-            if (!ToDeleteInterfaces.Contains(profile))
+            if (item == null) return;
+            var profile = item.DataContext as InterfaceProfile;
+            if (profile != null && !ToDeleteInterfaces.Contains(profile))
+            {
                 ToDeleteInterfaces.Add(profile);
+            }
         }
 
         public void InterfaceUnchecked(RoutedEventArgs e)
         {
             var item = e.Source as CheckBox;
 
-            var profile = InterfaceProfiles.First(x => x.Name == (string)item.Content);
-            if (ToDeleteInterfaces.Contains(profile))
+            if (item == null) return;
+            var profile = item.DataContext as InterfaceProfile;
+            if (profile != null && ToDeleteInterfaces.Contains(profile))
+            {
                 ToDeleteInterfaces.Remove(profile);
+            }
         }
 
         public void NetworkChecked(RoutedEventArgs e)
         {
             var item = e.Source as CheckBox;
 
-            var profile = NetworkProfiles.First(x => x.Name == (string)item.Content);
-            if (!ToDeleteNetworks.Contains(profile))
+            if (item == null) return;
+            var profile = item.DataContext as NetworkProfile;
+            if (profile != null && !ToDeleteNetworks.Contains(profile))
+            {
                 ToDeleteNetworks.Add(profile);
+            }
         }
 
         public void NetworkUnchecked(RoutedEventArgs e)
         {
             var item = e.Source as CheckBox;
 
-            var profile = NetworkProfiles.First(x => x.Name == (string)item.Content);
-            if (ToDeleteNetworks.Contains(profile))
+            if (item == null) return;
+            var profile = item.DataContext as NetworkProfile;
+            if (profile != null && ToDeleteNetworks.Contains(profile))
+            {
                 ToDeleteNetworks.Remove(profile);
+            }
         }
         #endregion
 
@@ -310,22 +369,24 @@ namespace BetterNetwork.ViewModels
                 foreach (var interfaceProfile in ToDeleteInterfaces)
                 {
                     DeleteInterfaceProfiles(interfaceProfile);
+                    InterfaceProfiles.Remove(interfaceProfile);
                 }
             }
 
-            //if (ToDeleteNetworks.Count != 0)
-            //{
-            //    foreach (var networkProfile in ToDeleteNetworks)
-            //    {
-            //        DeleteNetworkProfiles(networkProfile);
-            //    }
-            //}
+            UpdateInterfaceProfileListKey();
 
-            // Clear trackers collection
-            ToDeleteNetworks.Clear();
+            if (ToDeleteNetworks.Count != 0)
+            {
+                foreach (var networkProfile in ToDeleteNetworks)
+                {
+                    DeleteNetworkProfiles(networkProfile);
+                    NetworkProfiles.Remove(networkProfile);
+                }
+            }
+
+            // Clear trackers
             ToDeleteInterfaces.Clear();
-
-            MessageBox.Show("Changes will only take effect after system restart.");
+            ToDeleteNetworks.Clear();
         }
 
         public void About()

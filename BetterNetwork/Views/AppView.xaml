@@ -101,7 +101,7 @@
         </GroupBox>
         <Button Name="LoadAll" Content="Load All" 
                 Grid.Column="1" HorizontalAlignment="Left" Margin="10,116,0,0" VerticalAlignment="Top" Width="96" Height="20"/>
-        <Button Name="Delete" Content="Delete" Grid.Column="1" HorizontalAlignment="Left" Margin="110,116,0,0" VerticalAlignment="Top" Width="96" Height="20"/>
+        <Button x:Name="Delete" Content="Delete" Grid.Column="1" HorizontalAlignment="Left" Margin="110,116,0,0" VerticalAlignment="Top" Width="96" Height="20"/>
         <!--http://stackoverflow.com/questions/4757780/bind-method-on-click-event-of-labellink-control-in-wpf-caliburn/13587615#13587615-->
         <Button Style="{StaticResource HyperlinkButton}" Focusable="False"
             cal:Message.Attach="[Event Click] = [Action About]" Grid.Column="1" Margin="178,185,0,0" Height="20" VerticalAlignment="Top" Grid.Row="1">
