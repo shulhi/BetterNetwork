@@ -54,7 +54,7 @@
                         </GridViewColumn>
                         <GridViewColumn Header="Profile" DisplayMemberBinding="{Binding Name}" Width="auto"/>
                         <GridViewColumn Header="Profile Guid" DisplayMemberBinding="{Binding ProfileGuid}" Width="auto"/>
-                        <GridViewColumn Header="Managed/Unmanaged" DisplayMemberBinding="{Binding ManageType}" Width="auto"/>
+                        <GridViewColumn Header="Signature" DisplayMemberBinding="{Binding ManageType}" Width="auto"/>
                     </GridView>
                 </ListView.View>
             </ListView>

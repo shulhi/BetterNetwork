@@ -99,7 +99,7 @@ namespace BetterNetwork.ViewModels
             ToDeleteNetworks.CollectionChanged += (sender, args) => NotifyOfPropertyChange(() => CanDelete);
         }
 
-        #region Network Interfaces Profiles
+        #region Interfaces Profiles
         public void GetInterfaces()
         {
             try
@@ -244,8 +244,10 @@ namespace BetterNetwork.ViewModels
             }
             catch (Exception ex)
             {
-                if (ex is SecurityException)
-                    MessageBox.Show("Administrator right is required.");
+                if (ex is SecurityException || ex is UnauthorizedAccessException)
+                    MessageBox.Show(ex.Message + " Please run as administrator.", "Admin rights required");
+                if (ex is ArgumentException || ex is NullReferenceException)
+                    MessageBox.Show(ex.Message, "Could not find registry key");
             }
         }
 
